@@ -13,5 +13,22 @@ services:
       - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1.1
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db/MYSERIESLIST
+      KC_DB_USERNAME: $DB_USER
+      KC_DB_PASSWORD: $DB_PASSWORD
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_LOG_LEVEL: DEBUG
+    ports:
+      - "8090:8080"
+    depends_on:
+      - db
+    command: start-dev
+
 volumes:
   postgres_data:
