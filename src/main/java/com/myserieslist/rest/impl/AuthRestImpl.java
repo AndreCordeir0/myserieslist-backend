@@ -5,11 +5,9 @@ import com.myserieslist.dto.AuthRequest;
 import com.myserieslist.dto.UserCreateRequest;
 import com.myserieslist.services.AuthService;
 import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -37,5 +35,22 @@ public class AuthRestImpl {
     @PermitAll
     public Response getToken(AuthRequest authRequest) {
         return Response.ok(authService.getToken(authRequest)).build();
+    }
+
+    @GET
+    @Path("/teste")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({ "user" })
+    public Response teste() {
+        return Response.ok("Olá").build();
+    }
+
+    @GET
+    @Path("/teste-all")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response testeAll() {
+        return Response.ok("Olá2").build();
     }
 }
