@@ -14,6 +14,7 @@ public record SerieRecord(
         SerieStatus status,
         String synopse,
         LocalDate airingDate,
-        List<CategoryRecord> categories
+        List<CategoryRecord> categories,
+        List<ImageRecord> images
 ) {
 }

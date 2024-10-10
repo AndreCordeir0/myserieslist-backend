@@ -45,6 +45,19 @@ public class Serie extends PanacheEntityBase {
     @ManyToMany
     private List<Category> categories;
 
+    @JoinTable(
+            name = "SERIE_IMAGE",
+            joinColumns = @JoinColumn(
+                    name = "id_serie"
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "id_image"
+            )
+    )
+    @ManyToMany
+    private List<Image> images;
+
+
     public Serie() {
     }
 
@@ -130,5 +143,13 @@ public class Serie extends PanacheEntityBase {
     public Serie setAiringDate(LocalDate airingDate) {
         this.airingDate = airingDate;
         return this;
+    }
+
+    public List<Image> getImages() {
+        return images;
+    }
+
+    public void setImages(List<Image> images) {
+        this.images = images;
     }
 }

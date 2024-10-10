@@ -1,26 +1,34 @@
 package com.myserieslist.services.impl;
 
 import com.myserieslist.dto.CategoryRecord;
+import com.myserieslist.dto.ImageRecord;
 import com.myserieslist.dto.Pagination;
 import com.myserieslist.dto.SerieRecord;
-import com.myserieslist.entity.Category;
-import com.myserieslist.entity.Serie;
-import com.myserieslist.entity.SerieCategory;
+import com.myserieslist.entity.*;
 import com.myserieslist.exceptions.MySeriesListException;
+import com.myserieslist.services.ImageService;
 import com.myserieslist.services.SerieService;
 import com.myserieslist.utils.ListUtils;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 
 @RequestScoped
 public class SerieServiceImpl implements SerieService {
 
+    @Inject
+    ImageService imageService;
+
     @Override
     @Transactional
-    public Long save(SerieRecord serieRecord) {
+    public Long save(SerieRecord serieRecord) throws IOException {
         if (serieRecord.id() != null) {
             throw new MySeriesListException("Serie cannot have 'id' in persist", 400);
         }
@@ -34,16 +42,29 @@ public class SerieServiceImpl implements SerieService {
 
         serie.persist();
         addCategorieSeries(serieRecord.categories(), serie.getId());
+        addImageSeries(serieRecord.images(), serie);
         return serie.getId();
     }
 
-    private void addCategorieSeries(List<CategoryRecord> categories, Long serieId) {
+    private void addCategorieSeries(List<CategoryRecord> categories, Long idSerie) {
         if (ListUtils.isNotEmpty(categories)) {
             for (CategoryRecord categoryRecord : categories) {
                 SerieCategory serieCategory = new SerieCategory();
                 serieCategory.setCategory(new Category(categoryRecord.id()));
-                serieCategory.setSerie(new Serie(serieId));
+                serieCategory.setSerie(new Serie(idSerie));
                 serieCategory.persist();
+            }
+        }
+    }
+
+    private void addImageSeries(List<ImageRecord> images, Serie serie) throws IOException {
+        if (ListUtils.isNotEmpty(images)) {
+            List<Image> imagesEntity = imageService.addImages(images);
+            for (Image image: imagesEntity) {
+                SerieImage serieImage = new SerieImage();
+                serieImage.setImage(image);
+                serieImage.setSerie(serie);
+                serieImage.persist();
             }
         }
     }
