@@ -99,3 +99,24 @@ ALTER TABLE "SERIE_CATEGORY" ADD COLUMN ACTIVE boolean NOT NULL DEFAULT TRUE;
 ALTER TABLE "CATEGORY" ADD COLUMN ACTIVE boolean NOT NULL DEFAULT TRUE;
 
 
+--changeset andre:11
+CREATE TABLE "IMAGE"(
+    id_image SERIAL PRIMARY KEY NOT NULL,
+    desc_image VARCHAR(255),
+    hash VARCHAR(255) not null,
+    created_at timestamp not null ,
+    active bool not null default true
+);
+
+CREATE TABLE "SERIE_IMAGE"(
+    id_image INTEGER,
+    id_serie INTEGER,
+    CONSTRAINT fk_image
+        FOREIGN KEY(id_image)
+            REFERENCES "IMAGE"(id_image),
+    CONSTRAINT fk_serie
+        FOREIGN KEY(id_serie)
+            REFERENCES "SERIE"(SERIE_ID),
+    CONSTRAINT pk_serie_image
+        PRIMARY KEY (id_image, id_serie)
+);
