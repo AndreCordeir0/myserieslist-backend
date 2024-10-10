@@ -7,14 +7,20 @@ import com.myserieslist.services.AuthService;
 import com.myserieslist.workaround.CustomUserRepresentation;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 
+import java.net.URI;
+import java.util.Collections;
 import java.util.List;
+
+import static java.util.Arrays.asList;
 
 @RequestScoped
 public class AuthServiceImpl extends MySeriesListBaseServiceImpl implements AuthService  {
@@ -42,15 +48,34 @@ public class AuthServiceImpl extends MySeriesListBaseServiceImpl implements Auth
 
         RealmResource realmResource = keycloak.realm(userRealm);
         UsersResource usersResource = realmResource.users();
-
-        Response result = getResponseCreateUser(usersResource, keycloakUser, keycloak);
+        RoleRepresentation userRole = realmResource.roles()
+                .get(RolesEnum.USER.getKey()).toRepresentation();
+        Response result = getResponseCreateUser(usersResource, keycloakUser);
+        String userId = getCreatedId(result);
         handleResult(result);
+        keycloak.realm(userRealm).users().get(userId).roles().realmLevel()
+                .add(Collections.singletonList(userRole));
+        keycloak.close();
         AuthRequest authRequest = new AuthRequest(
                 userRequest.username(),
                 userRequest.password()
         );
 
         return getToken(authRequest);
+    }
+
+    private String getCreatedId(Response response) {
+        URI location = response.getLocation();
+        if (!response.getStatusInfo().equals(Response.Status.CREATED)) {
+            Response.StatusType statusInfo = response.getStatusInfo();
+            throw new WebApplicationException("Create method returned status " +
+                    statusInfo.getReasonPhrase() + " (Code: " + statusInfo.getStatusCode() + "); expected status: Created (201)", response);
+        }
+        if (location == null) {
+            return null;
+        }
+        String path = location.getPath();
+        return path.substring(path.lastIndexOf('/') + 1);
     }
 
     private static void handleResult(Response result) {
@@ -66,18 +91,14 @@ public class AuthServiceImpl extends MySeriesListBaseServiceImpl implements Auth
 
     private Response getResponseCreateUser(
             UsersResource usersResource,
-            CustomUserRepresentation keycloakUser,
-            Keycloak keycloak
+            CustomUserRepresentation keycloakUser
     ) {
         Response result = null;
         try {
             result = usersResource.create(keycloakUser);
         } catch(Exception e) {
             Log.error(e);
-            result.close();
             throw new MySeriesListException("Unexpected error occurred during create", 500);
-        } finally {
-            keycloak.close();
         }
         return result;
     }
@@ -92,7 +113,8 @@ public class AuthServiceImpl extends MySeriesListBaseServiceImpl implements Auth
         keycloakUser.setEmail(userRequest.email());
         keycloakUser.setCredentials(List.of(credential));
         keycloakUser.setEnabled(true);
-        keycloakUser.setRealmRoles(List.of(RolesEnum.USER.getKey()));
+//        keycloakUser.setRealmRoles(List.of(RolesEnum.USER.getKey()));
+
         return keycloakUser;
     }
 
