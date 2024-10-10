@@ -82,7 +82,23 @@ public class SerieServiceImpl implements SerieService {
 
     @Override
     public Pagination<SerieRecord> paginated(Pagination<SerieRecord> pagination) {
-        return null;
+        PanacheQuery<Serie> series = Serie.find("name = :name", (HashMap) pagination.filters());
+        List<Serie> result = series.page(pagination.pageNumber(), pagination.recordsPerPage()).list();
+        List<SerieRecord> serieRecords = result.stream().map(serie ->
+                new SerieRecord(
+                        serie.getId(),
+                        serie.getName(),
+                        serie.getStatus(),
+                        serie.getSynopse(),
+                        serie.getAiringDate(),
+                        serie.getCategories().stream()
+                                .map(category -> new CategoryRecord(category.getId(), category.getName()))
+                                .toList(),
+                        Collections.emptyList()
+                )
+        ).toList();
+        Long count = series.count();
+        return new Pagination<SerieRecord>(pagination.pageNumber(), pagination.recordsPerPage(), pagination.filters(), serieRecords, count);
     }
 
     @Override

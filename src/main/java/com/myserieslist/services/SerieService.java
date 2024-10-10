@@ -3,9 +3,11 @@ package com.myserieslist.services;
 import com.myserieslist.dto.Pagination;
 import com.myserieslist.dto.SerieRecord;
 
+import java.io.IOException;
+
 public interface SerieService {
     
-    Long save(SerieRecord serieRecord);
+    Long save(SerieRecord serieRecord) throws IOException;
 
     Long update(SerieRecord serieRecord);
 
