@@ -4,7 +4,7 @@ package com.myserieslist.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "\"CATEGORY\"")
+@Table(name = "category")
 public class Category {
 
     @Id

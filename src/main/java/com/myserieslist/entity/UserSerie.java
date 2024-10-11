@@ -5,7 +5,7 @@ import com.myserieslist.enums.UserSerieStatus;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "\"USER_SERIE_RELATIONSHIP\"")
+@Table(name = "user_serie_relationship")
 public class UserSerie {
 
 

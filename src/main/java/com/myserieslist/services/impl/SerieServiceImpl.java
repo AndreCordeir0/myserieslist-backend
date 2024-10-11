@@ -98,7 +98,13 @@ public class SerieServiceImpl implements SerieService {
                 )
         ).toList();
         Long count = series.count();
-        return new Pagination<SerieRecord>(pagination.pageNumber(), pagination.recordsPerPage(), pagination.filters(), serieRecords, count);
+        return new Pagination<>(
+                pagination.pageNumber(),
+                pagination.recordsPerPage(),
+                pagination.filters(),
+                serieRecords,
+                count
+        );
     }
 
     @Override

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "\"SERIE\"")
+@Table(name = "serie")
 public class Serie extends PanacheEntityBase {
 
     @Id
@@ -42,7 +42,7 @@ public class Serie extends PanacheEntityBase {
                     name = "category_id"
             )
     )
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     private List<Category> categories;
 
     @JoinTable(

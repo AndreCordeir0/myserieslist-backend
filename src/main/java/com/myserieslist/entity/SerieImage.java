@@ -5,7 +5,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "\"SERIE_IMAGE\"")
+@Table(name = "serie_image")
 public class SerieImage extends PanacheEntityBase {
 
     @JoinColumn(name = "id_image")
