@@ -120,3 +120,19 @@ CREATE TABLE serie_image(
     CONSTRAINT pk_serie_image
         PRIMARY KEY (id_image, id_serie)
 );
+
+
+--changeset andre:12
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE OR REPLACE FUNCTION generate_searchable(_serie_name VARCHAR, _serie_synopse VARCHAR, _serie_status VARCHAR)
+    RETURNS TEXT AS '
+    BEGIN
+        RETURN _serie_name || _serie_synopse || _serie_status;
+    END;
+    ' LANGUAGE plpgsql IMMUTABLE;
+
+ALTER TABLE SERIE ADD COLUMN searchable text GENERATED ALWAYS AS (generate_searchable(serie_name, serie_synopse, SERIE_STATUS)) STORED;
+
+CREATE INDEX IF NOT EXISTS idx_series_searchable ON public.serie USING gist (searchable public.gist_trgm_ops);
