@@ -1,6 +1,5 @@
 package com.myserieslist.dto;
 
-import com.myserieslist.entity.Category;
 import com.myserieslist.enums.SerieStatus;
 import jakarta.validation.constraints.NotNull;
 

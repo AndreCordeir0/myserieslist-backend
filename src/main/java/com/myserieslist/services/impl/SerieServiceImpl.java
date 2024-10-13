@@ -94,7 +94,9 @@ public class SerieServiceImpl implements SerieService {
                         serie.getCategories().stream()
                                 .map(category -> new CategoryRecord(category.getId(), category.getName()))
                                 .toList(),
-                        Collections.emptyList()
+                        serie.getImages().stream()
+                                .map(image->new ImageRecord(null, image.getDescImage(), image.getHash()))
+                                .toList()
                 )
         ).toList();
         Long count = series.count();
