@@ -3,12 +3,14 @@ package com.myserieslist.services.impl;
 import com.myserieslist.dto.ImageRecord;
 import com.myserieslist.entity.Image;
 import com.myserieslist.exceptions.MySeriesListException;
+import com.myserieslist.services.FileService;
 import com.myserieslist.services.ImageService;
 import com.myserieslist.utils.FileUtils;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.logging.Log;
 import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.io.File;
@@ -22,8 +24,10 @@ import java.util.*;
 @RequestScoped
 public class ImageServiceImpl implements ImageService {
 
-    @ConfigProperty(name = "my.series.list.volume.path")
-    String volumePath;
+    @Inject
+    FileService fileService;
+
+
     static final String[] filesExtensions;
     static {
         filesExtensions = new String[] {
@@ -50,7 +54,7 @@ public class ImageServiceImpl implements ImageService {
         image.setActive(true);
         image.setCreatedAt(LocalDateTime.now());
         image.setHash(UUID.randomUUID().toString());
-        createFileInVolume(imageContent, image.getHash());
+        fileService.createFileInVolume(imageContent, image.getHash());
         image.persist();
         return image;
     }
@@ -75,7 +79,7 @@ public class ImageServiceImpl implements ImageService {
                 .firstResultOptional()
                 .orElseThrow(()->new MySeriesListException("No result", 404));
         return new ImageRecord(
-                getFileByHash(image.getHash()),
+                fileService.getBase64ByHash(image.getHash()),
                 image.getDescImage(),
                 image.getHash()
         );
@@ -93,7 +97,7 @@ public class ImageServiceImpl implements ImageService {
                 .stream()
                 .map(image->
                         new ImageRecord(
-                                getFileByHash(image.getHash()),
+                                fileService.getBase64ByHash(image.getHash()),
                                 image.getDescImage(),
                                 image.getHash()
                         )
@@ -101,32 +105,9 @@ public class ImageServiceImpl implements ImageService {
                 .toList();
     }
 
-    private String getFileByHash(String hash) {
-        String path = filePath(hash);
-        try (InputStream in = new FileInputStream(path)) {
-            byte[] imageBytes = in.readAllBytes();
-            return Base64.getEncoder().encode(imageBytes).toString();
-        } catch (Exception e) {
-            Log.error(e);
-            throw new MySeriesListException("Unexpected error during image encode.", 500);
-        }
-    }
-
     private PanacheQuery<Image> getImageQuery(List<String> hashs) {
         return Image.find("hash in ( :hashs )", Parameters.with("hashs", hashs));
     }
 
-    private void createFileInVolume(byte[] image, String hash) throws IOException {
-        File file = new File(filePath(hash));
-        boolean fileCreated = file.createNewFile();
-        if (!fileCreated)
-            throw new RuntimeException("Image hash already exists");
-        Files.write(file.toPath(), image);
-    }
 
-    private String filePath(String hash) {
-        return volumePath +
-                "/" +
-                hash;
-    }
 }
