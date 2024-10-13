@@ -17,7 +17,9 @@ public interface ImageService {
 
     ImageRecord getImage(String hash);
 
-    List<ImageRecord> getImages(String identifier);
+    List<ImageRecord> getImages(Long serieId);
+
+    List<ImageRecord> getImages(List<String> hashs);
 
 
 }
